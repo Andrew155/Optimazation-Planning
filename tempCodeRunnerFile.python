@@ -1,0 +1,58 @@
+class EightQueenSolver:
+    def __init__(self):
+        self.board_size = 8
+        self.solutions = []
+
+    def is_safe(self, solution, row, col):
+     for prev_row in range(row):
+        prev_col = solution[prev_row]
+        if prev_col is not None and prev_row is not None:
+            if prev_col == col or \
+               prev_row - prev_col == row - col or \
+               prev_row + prev_col == row + col:
+                return False
+        return True
+
+
+    def forward_checking(self, solution, row, domain):
+        updated_domain = domain[:]
+        for i in range(row + 1, self.board_size):
+            for j in range(len(updated_domain)):
+                if not self.is_safe(solution, i, updated_domain[j]):
+                    updated_domain[j] = None
+            updated_domain = list(filter(lambda x: x is not None, updated_domain))
+            if not updated_domain:
+                return False, []
+        return True, updated_domain
+
+    def solve(self, solution, row, domain):
+        if row == self.board_size:
+            self.solutions.append(solution[:])
+            return
+
+        for col in domain:
+            if col is not None:
+                new_solution = solution[:]
+                new_solution[row] = col
+                safe, new_domain = self.forward_checking(new_solution, row, domain[:])
+                if safe:
+                    self.solve(new_solution, row + 1, new_domain)
+
+    def find_solutions(self):
+        initial_domain = list(range(self.board_size))
+        self.solve([None] * self.board_size, 0, initial_domain)
+        return self.solutions
+
+    def print_solution(self, solution):
+        for row in solution:
+            line = ['.'] * self.board_size
+            line[row] = 'Q'
+            print(' '.join(line))
+        print()
+
+if __name__ == "__main__":
+    solver = EightQueenSolver()
+    solutions = solver.find_solutions()
+    print("Number of solutions:", len(solutions))
+    for solution in solutions:
+        solver.print_solution(solution)
